@@ -1,0 +1,45 @@
+name: Build
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    name: Ruby ${{ matrix.ruby }} / Rails ${{ matrix.rails }}
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby:
+          - "2.5"
+          - "2.6"
+          - "2.7"
+          - "3.0"
+        rails:
+          - "5.0"
+          - "5.1"
+          - "5.2"
+          - "6.0"
+          - "6.1"
+        exclude:
+          - ruby: 3.0
+            rails: "5.0"
+          - ruby: 3.0
+            rails: "5.1"
+          - ruby: 3.0
+            rails: "5.2"
+
+    runs-on: 'ubuntu-latest'
+
+    env:
+      ARUBA_TIMEOUT: 240
+      BUNDLE_GEMFILE: gemfiles/rails${{ matrix.rails }}.gemfile
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Setup project
+        run: bundle install
+      - name: Run test
+        run: bundle exec rake
